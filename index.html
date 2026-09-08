@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDOban — Ultra-Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="ido-logo.ico">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+  <!-- HEADER HARDWARE -->
+  <header class="us-header">
+    <div class="us-header__left">
+      <div class="us-knob" aria-hidden="true">
+        <canvas class="us-knob__spiral" width="48" height="48"></canvas>
+        <div class="us-knob__notch"></div>
+        <div class="us-knob__center"></div>
+      </div>
+      <div class="us-brand">
+        <h1 class="us-brand__title">IDOban</h1>
+      </div>
+    </div>
+    <div class="us-header__right">
+      <div class="us-display">
+        <span class="us-display__label">CATEGORIAS</span>
+        <span class="us-display__value" id="displayCats">00</span>
+      </div>
+      <div class="us-display">
+        <span class="us-display__label">PROYECTOS</span>
+        <span class="us-display__value" id="displayProjs">00</span>
+      </div>
+      <div class="us-display">
+        <span class="us-display__label">TAREAS</span>
+        <span class="us-display__value" id="displayTasks">00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV BREADCRUMB -->
+  <nav class="us-breadcrumb" id="breadcrumb">
+    <!-- dinámico -->
+  </nav>
+
+  <!-- MAIN VIEWS -->
+  <main class="us-main">
+    <!-- VIEW: CATEGORIAS -->
+    <section id="view-categories" class="us-view is-active">
+      <div class="us-section-head">
+        <h2 class="us-section-title">CATEGORIAS // AREAS GRANDES</h2>
+        <button class="us-btn us-btn--primary" id="btnAddCategory">+ NUEVA CATEGORIA</button>
+      </div>
+      <p class="us-hint">Crea tus áreas grandes (Facultad, Trabajo, Personal). Dentro de cada una van tus proyectos.</p>
+      <div id="categoriesGrid" class="us-grid-cats">
+        <!-- cards -->
+      </div>
+      <div id="emptyCats" class="us-empty">
+        <div class="us-empty__panel">
+          <p class="us-empty__title">SIN CATEGORIAS</p>
+          <p class="us-empty__text">Crea tu primera área para empezar. Ej: "UNIVERSIDAD" o "FREELANCE".</p>
+          <button class="us-btn us-btn--primary" onclick="document.getElementById('btnAddCategory').click()">+ CREAR CATEGORIA</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: PROYECTOS -->
+    <section id="view-projects" class="us-view">
+      <div class="us-section-head">
+        <h2 class="us-section-title" id="projectsTitle">PROYECTOS</h2>
+        <button class="us-btn us-btn--primary" id="btnAddProject">+ NUEVO PROYECTO</button>
+      </div>
+      <p class="us-hint" id="projectsHint"></p>
+      <div id="projectsGrid" class="us-grid-cats"></div>
+      <div id="emptyProjs" class="us-empty" style="display:none">
+        <div class="us-empty__panel">
+          <p class="us-empty__title">SIN PROYECTOS</p>
+          <p class="us-empty__text">Crea un proyecto dentro de esta categoría. Ej: "TESIS 2026".</p>
+          <button class="us-btn us-btn--primary" id="btnAddProjectEmpty">+ CREAR PROYECTO</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: TABLERO KANBAN -->
+    <section id="view-board" class="us-view">
+      <div class="us-board-head">
+        <h2 class="us-section-title" id="boardTitle">TABLERO</h2>
+        <div class="us-board-stats" id="boardStats">
+          <!-- displays -->
+        </div>
+      </div>
+      <div class="us-board-actions">
+        <div class="us-input-group">
+          <input id="inputTask" class="us-input" type="text" maxlength="80" placeholder="Nueva tarea — solo título (max 80)" autocomplete="off">
+          <button class="us-btn us-btn--primary" id="btnAddTask">+ AGREGAR</button>
+        </div>
+        <p class="us-hint">Arrastra las tarjetas entre columnas. Solo título, sin fricción.</p>
+      </div>
+
+      <div class="us-kanban" id="kanban">
+        <div class="us-col" data-status="todo">
+          <div class="us-col__head">
+            <span class="us-col__dot is-todo"></span>
+            <h3>SIN COMENZAR</h3>
+            <span class="us-col__count" id="countTodo">0</span>
+          </div>
+          <div class="us-col__body" id="colTodo"></div>
+        </div>
+        <div class="us-col" data-status="doing">
+          <div class="us-col__head is-active">
+            <span class="us-col__dot is-doing"></span>
+            <h3>EN PROCESO</h3>
+            <span class="us-col__count is-active" id="countDoing">0</span>
+          </div>
+          <div class="us-col__body" id="colDoing"></div>
+        </div>
+        <div class="us-col" data-status="done">
+          <div class="us-col__head">
+            <span class="us-col__dot is-done"></span>
+            <h3>TERMINADO</h3>
+            <span class="us-col__count" id="countDone">0</span>
+          </div>
+          <div class="us-col__body" id="colDone"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div id="modalOverlay" class="us-modal-overlay" aria-hidden="true">
+    <div class="us-modal" role="dialog" aria-modal="true">
+      <h3 id="modalTitle" class="us-modal__title">NUEVA CATEGORIA</h3>
+      <input id="modalInput" class="us-input" type="text" maxlength="32" placeholder="Nombre (ej: TRABAJO)" autocomplete="off">
+      <p id="modalError" class="us-modal__error"></p>
+      <div class="us-modal__actions">
+        <button class="us-btn" id="modalCancel">CANCELAR</button>
+        <button class="us-btn us-btn--primary" id="modalConfirm">CREAR</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <footer class="us-footer">
+    <span>IDOban v1.0 — WEB // MÓVIL ULTRA-STUDIO — 1:1 SYSTEM</span>
+    <span class="us-footer__acc">● REC</span>
+  </footer>
+
+<script src="app.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

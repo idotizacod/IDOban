@@ -1,0 +1,19 @@
+{
+  "name": "idoban",
+  "version": "1.0.0",
+  "description": "Tablero personal Kanban (tipo Trello) 100% para proyectos propios. Web primero, móvil después (1:1 Ultra-Studio).",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/preferences": "^8.0.1"
+  }
+}

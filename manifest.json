@@ -1,0 +1,20 @@
+{
+  "name": "IDOban",
+  "short_name": "IDOban",
+  "description": "IDOban — Tablero personal Kanban Ultra-Studio. Categorías > Proyectos > Tareas con drag & drop y widget recientes.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#121212",
+  "orientation": "portrait",
+  "scope": "./",
+  "categories": ["productivity","utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='64' fill='%23121212'/%3E%3Ccircle cx='256' cy='256' r='92' fill='none' stroke='%23d32f2f' stroke-width='10'/%3E%3Ccircle cx='256' cy='256' r='14' fill='%23d32f2f'/%3E%3Ctext x='50%25' y='78%25' dominant-baseline='middle' text-anchor='middle' font-family='Courier New, monospace' font-size='48' fill='%23f8f9fa' font-weight='700'%3EIDOban%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

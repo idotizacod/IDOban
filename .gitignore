@@ -1,0 +1,19 @@
+node_modules/
+www/
+*.log
+.DS_Store
+Thumbs.db
+
+# Capacitor / Android build artifacts (only the committed APK at root is kept)
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
+android/.idea/
+android/captures/
+android/*.iml

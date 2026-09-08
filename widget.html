@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDOban Widget — Home Screen</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{background:#e2e8f0;padding:18px}
+  .us-phone-frame{max-width:360px;margin:0 auto;background:var(--us-canvas);border:1px solid var(--us-text);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+  .us-phone-top{height:14px;background:var(--us-dark);display:flex;justify-content:center;align-items:center}
+  .us-phone-top span{width:70px;height:4px;background:#2a2a2a;border-radius:999px;display:block}
+  .us-widget-preview{padding:12px}
+  .us-widget-preview .us-widget{margin:0}
+  .us-widget__note{font-size:10px;opacity:0.5;margin-top:10px;letter-spacing:0.04em;text-align:center}
+</style>
+</head>
+<body>
+  <p style="font-family:var(--us-font);font-size:11px;letter-spacing:0.12em;text-align:center;margin-bottom:12px;opacity:0.6">PREVIEW // WIDGET PANTALLA DE INICIO — IDOban</p>
+  <div class="us-phone-frame">
+    <div class="us-phone-top"><span></span></div>
+    <div class="us-widget-preview">
+      <div class="us-widget" id="homeWidget">
+        <div class="us-widget__head">
+          <h2 class="us-section-title" style="font-size:11px">IDOban // RECIENTES</h2>
+          <span class="us-widget__badge" id="widgetCount">0</span>
+        </div>
+        <p class="us-hint" style="margin-bottom:8px">Toca un proyecto para abrirlo en IDOban</p>
+        <div id="widgetList" class="us-widget__list" style="grid-template-columns:1fr"></div>
+        <div id="widgetEmpty" class="us-widget__empty">Sin proyectos recientes</div>
+        <p class="us-widget__note">Home widget real: 4×2 celdas Android — datos leídos de <code>idoban_recent_v1</code></p>
+      </div>
+    </div>
+  </div>
+  <p style="font-family:var(--us-font);font-size:10px;opacity:0.5;max-width:360px;margin:12px auto 0;line-height:1.5">
+    Este archivo simula cómo se verá el <strong>widget nativo</strong> en la home del celular (no dentro de la app). 
+    En el port a móvil real (Capacitor / React Native / Kotlin Glance) este mismo markup se renderiza como <code>AppWidgetProvider</code> 
+    y cada fila hace deep-link: <code>idoban://project/{id}</code> → abre el tablero Kanban.
+    La app mantiene <code>idoban_recent_v1</code> actualizado al abrir un proyecto.
+  </p>
+<script>
+// Widget home — lee mismos stores que IDOban
+const LS_KEY='idoban_board_v1';
+const LS_RECENT='idoban_recent_v1';
+function loadState(){ try{ const r=localStorage.getItem(LS_KEY); return r?JSON.parse(r):{categories:[],projects:[],tasks:[]}; }catch{ return {categories:[],projects:[],tasks:[]}; } }
+function getRecent(){ try{ const r=JSON.parse(localStorage.getItem(LS_RECENT)||'[]'); return Array.isArray(r)?r:[];}catch{return[];} }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function render(){
+  const state=loadState();
+  const ids=getRecent();
+  const projs=ids.map(id=>state.projects.find(p=>p.id===id)).filter(Boolean).slice(0,4);
+  document.getElementById('widgetCount').textContent=String(projs.length);
+  const list=document.getElementById('widgetList');
+  const empty=document.getElementById('widgetEmpty');
+  list.innerHTML='';
+  if(projs.length===0){ empty.style.display='block'; list.style.display='none'; return; }
+  empty.style.display='none'; list.style.display='grid';
+  projs.forEach(proj=>{
+    const tasks=state.tasks.filter(t=>t.projectId===proj.id);
+    const todo=tasks.filter(t=>t.status==='todo').length;
+    const doing=tasks.filter(t=>t.status==='doing').length;
+    const done=tasks.filter(t=>t.status==='done').length;
+    const total=tasks.length;
+    let pcts=[0,0,0];
+    if(total){ pcts=[Math.round(todo/total*100),Math.round(doing/total*100),Math.round(done/total*100)]; let s=pcts.reduce((a,b)=>a+b,0); if(s!==100) pcts[2]+=100-s; }
+    const bar = total===0 ? `<div class="us-progress__empty">SIN TAREAS</div>` :
+      `<div class="us-progress"><div class="us-progress__seg is-todo" style="width:${pcts[0]}%"></div><div class="us-progress__seg is-doing" style="width:${pcts[1]}%"></div><div class="us-progress__seg is-done" style="width:${pcts[2]}%"></div></div>
+       <div class="us-progress__labels"><span class="us-progress__label is-todo"><i></i> ${pcts[0]}%</span><span class="us-progress__label is-doing"><i></i> ${pcts[1]}%</span><span class="us-progress__label is-done"><i></i> ${pcts[2]}%</span></div>`;
+    const el=document.createElement('div');
+    el.className='us-widget__item';
+    el.style.cursor='pointer';
+    el.innerHTML=`<div class="us-widget__item-top"><span class="us-card__badge is-accent">${total} T</span></div><div class="us-widget__item-title">${esc(proj.name)}</div>${bar}`;
+    el.addEventListener('click', ()=>{ location.href=`index.html#project=${proj.id}`; });
+    list.appendChild(el);
+  });
+}
+render();
+window.addEventListener('storage', render);
+setInterval(render, 1000);
+</script>
+</body>
+</html>
