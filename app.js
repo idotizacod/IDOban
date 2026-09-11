@@ -8,7 +8,7 @@ const defaultState = () => ({ categories: [], projects: [], tasks: [] });
 
 function uid(){ return Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
 
-let state = loadState();
+let state = defaultState();
 let nav = { categoryId: null, projectId: null };
 let modalMode = null; // 'category' | 'project' | 'editCategory' | 'editProject'
 let editId = null;
@@ -46,45 +46,61 @@ const els = {
   mobileNav: document.getElementById('mobileNav'),
 };
 
-function loadState(){
+async function loadState(){
   try{
     let raw = localStorage.getItem(LS_KEY);
-    // migración desde clave legacy IDOcod
-    if(!raw){
-      const legacy = localStorage.getItem(LS_LEGACY_KEY);
-      if(legacy){ localStorage.setItem(LS_KEY, legacy); raw = legacy; }
+    if(raw){ try{ const p=JSON.parse(raw); if(isValidBoard(p)) return p; }catch{} }
+    // Fallback 1: preferencias nativas (Capacitor Preferences / SharedPreferences) —
+    // sobreviven a WebView limpio, cierre forzado o reinstalación sin respaldo.
+    const nativeRaw = await getNativePrefsAsync(LS_KEY);
+    if(nativeRaw){
+      try{ const p=JSON.parse(nativeRaw); if(isValidBoard(p)){ localStorage.setItem(LS_KEY, JSON.stringify(p)); return p; } }catch{}
     }
-    if(!raw) return seedState();
-    const p = JSON.parse(raw);
-    if(!p.categories || !p.projects || !p.tasks) return seedState();
-    return p;
-  }catch{ return seedState(); }
+    // Fallback 2: migración desde clave legacy IDOcod
+    const legacy = localStorage.getItem(LS_LEGACY_KEY);
+    if(legacy){
+      try{ const p=JSON.parse(legacy); if(isValidBoard(p)){ localStorage.setItem(LS_KEY, legacy); return p; } }catch{}
+    }
+  }catch{}
+  // Nunca se fabrica data demo: siempre se arranca con el tablero real (vacío si no hay nada).
+  return defaultState();
 }
-function seedState(){
-  // seed demo minimal
-  const c1 = { id: uid(), name: 'UNIVERSIDAD', createdAt: new Date().toISOString() };
-  const p1 = { id: uid(), categoryId: c1.id, name: 'TESIS 2026', createdAt: new Date().toISOString() };
-  const t1 = { id: uid(), projectId: p1.id, title: 'Definir marco teórico', status:'todo', createdAt: new Date().toISOString() };
-  const t2 = { id: uid(), projectId: p1.id, title: 'Diseñar tablero Kanban', status:'doing', createdAt: new Date().toISOString() };
-  const t3 = { id: uid(), projectId: p1.id, title: 'Entrevista inicial CIOP', status:'done', createdAt: new Date().toISOString() };
-  return { categories:[c1], projects:[p1], tasks:[t1,t2,t3] };
+function isValidBoard(p){
+  return !!p && Array.isArray(p.categories) && Array.isArray(p.projects) && Array.isArray(p.tasks);
 }
-function saveState(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-  // Sync para widget nativo (Capacitor Preferences → SharedPreferences)
+function getNativePrefs(key){
+  try{
+    if(window.AndroidBridge && window.AndroidBridge.getPrefs){
+      const v = window.AndroidBridge.getPrefs(key);
+      if(typeof v === 'string') return v;
+    }
+  }catch{}
+  return null;
+}
+async function getNativePrefsAsync(key){
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences){
-      window.Capacitor.Plugins.Preferences.set({key: LS_KEY, value: JSON.stringify(state)});
+      const r = await window.Capacitor.Plugins.Preferences.get({key});
+      if(r && typeof r.value === 'string'){ localStorage.setItem(key, r.value); return r.value; }
     }
-    // Fallback: intenta escribir directo a Android SharedPreferences vía bridge si existe
-    if(window.AndroidBridge) window.AndroidBridge.setPrefs(LS_KEY, JSON.stringify(state));
   }catch{}
-  // Notifica al widget para que se redibuje (cuando está en WebView)
+  return getNativePrefs(key);
+}
+function setNativePrefs(key, value){
   try{
-    if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
-      // trigger update via custom native call si se expone
+    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences){
+      window.Capacitor.Plugins.Preferences.set({key, value}).catch(()=>{});
+    }
+    if(window.AndroidBridge && window.AndroidBridge.setPrefs){
+      window.AndroidBridge.setPrefs(key, value);
     }
   }catch{}
+}
+function saveState(){
+  const json = JSON.stringify(state);
+  localStorage.setItem(LS_KEY, json);
+  // Espejo nativo: el tablero sobrevive aunque el WebView pierda su storage.
+  setNativePrefs(LS_KEY, json);
 }
 
 function setView(which){
@@ -100,12 +116,9 @@ function pushRecent(projectId){
   let arr=getRecentIds().filter(id=>id!==projectId);
   arr.unshift(projectId);
   arr=arr.slice(0,MAX_RECENT);
-  localStorage.setItem(LS_RECENT_KEY, JSON.stringify(arr));
-  try{
-    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences){
-      window.Capacitor.Plugins.Preferences.set({key: LS_RECENT_KEY, value: JSON.stringify(arr)});
-    }
-  }catch{}
+  const json=JSON.stringify(arr);
+  localStorage.setItem(LS_RECENT_KEY, json);
+  setNativePrefs(LS_RECENT_KEY, json);
 }
 function openProjectDirect(projectId){
   const proj=state.projects.find(p=>p.id===projectId);
@@ -314,6 +327,21 @@ function renderColumn(container, tasks){
   });
 }
 
+// Confirmación de borrado (modal propio, funciona en web y en WebView Android)
+let confirmCb=null;
+function askConfirm(title, text, onOk){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').textContent = text;
+  confirmCb = onOk;
+  document.getElementById('confirmOverlay').classList.add('is-open');
+  document.getElementById('confirmOverlay').setAttribute('aria-hidden','false');
+}
+function closeConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('is-open');
+  document.getElementById('confirmOverlay').setAttribute('aria-hidden','true');
+  confirmCb=null;
+}
+
 // CRUD
 function openModal(mode, id=null, current=''){
   modalMode=mode; editId=id;
@@ -351,25 +379,36 @@ function confirmModal(){
   saveState(); closeModal(); renderAll();
 }
 function deleteCategory(id){
-  if(!confirm('¿Eliminar categoría y todos sus proyectos/tareas?')) return;
-  const projIds = state.projects.filter(p=>p.categoryId===id).map(p=>p.id);
-  state.tasks = state.tasks.filter(t=>!projIds.includes(t.projectId));
-  state.projects = state.projects.filter(p=>p.categoryId!==id);
-  state.categories = state.categories.filter(c=>c.id!==id);
-  if(nav.categoryId===id) nav={categoryId:null, projectId:null};
-  saveState(); renderAll();
+  askConfirm(
+    '¿ELIMINAR ÁREA?',
+    `Se eliminará la categoría y TODOS sus proyectos y tareas. Esta acción no se puede deshacer.`,
+    ()=>{
+      const projIds = state.projects.filter(p=>p.categoryId===id).map(p=>p.id);
+      state.tasks = state.tasks.filter(t=>!projIds.includes(t.projectId));
+      state.projects = state.projects.filter(p=>p.categoryId!==id);
+      state.categories = state.categories.filter(c=>c.id!==id);
+      if(nav.categoryId===id) nav={categoryId:null, projectId:null};
+      saveState(); renderAll();
+    }
+  );
 }
 function deleteProject(id){
-  if(!confirm('¿Eliminar proyecto y todas sus tareas?')) return;
-  state.tasks = state.tasks.filter(t=>t.projectId!==id);
-  state.projects = state.projects.filter(p=>p.id!==id);
-  if(nav.projectId===id) nav.projectId=null;
-  // limpiar recientes
-  try{
-    const r=getRecentIds().filter(x=>x!==id);
-    localStorage.setItem(LS_RECENT_KEY, JSON.stringify(r));
-  }catch{}
-  saveState(); renderAll();
+  askConfirm(
+    '¿ELIMINAR PROYECTO?',
+    `Se eliminará el proyecto y todas sus tareas. Esta acción no se puede deshacer.`,
+    ()=>{
+      state.tasks = state.tasks.filter(t=>t.projectId!==id);
+      state.projects = state.projects.filter(p=>p.id!==id);
+      if(nav.projectId===id) nav.projectId=null;
+      // limpiar recientes
+      try{
+        const r=getRecentIds().filter(x=>x!==id);
+        localStorage.setItem(LS_RECENT_KEY, JSON.stringify(r));
+        setNativePrefs(LS_RECENT_KEY, JSON.stringify(r));
+      }catch{}
+      saveState(); renderAll();
+    }
+  );
 }
 function deleteTask(id){
   state.tasks = state.tasks.filter(t=>t.id!==id);
@@ -463,28 +502,35 @@ function timeAgo(iso){
 }
 
 // Events
-document.getElementById('btnAddCategory').addEventListener('click', ()=> openModal('category'));
-document.getElementById('btnAddProject').addEventListener('click', ()=> openModal('project'));
-document.getElementById('btnAddProjectEmpty')?.addEventListener('click', ()=> openModal('project'));
-document.getElementById('btnAddTask').addEventListener('click', addTask);
-els.inputTask.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTask(); });
-document.getElementById('modalCancel').addEventListener('click', closeModal);
-document.getElementById('modalConfirm').addEventListener('click', confirmModal);
-els.modalOverlay.addEventListener('click', (e)=>{ if(e.target===els.modalOverlay) closeModal(); });
-els.modalInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') confirmModal(); if(e.key==='Escape') closeModal(); });
-document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && els.modalOverlay.classList.contains('is-open')) closeModal(); });
-// mobile nav
-if(els.mobileNav){
-  els.mobileNav.querySelectorAll('[data-mnav]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const v=btn.dataset.mnav;
-      if(v==='cats'){ nav={categoryId:null, projectId:null}; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
-      if(v==='recent'){ 
-        nav={categoryId:null, projectId:null}; renderAll(); 
-        setTimeout(()=>{ document.getElementById('widgetRecent')?.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
-      }
+function attachEvents(){
+  document.getElementById('btnAddCategory').addEventListener('click', ()=> openModal('category'));
+  document.getElementById('btnAddProject').addEventListener('click', ()=> openModal('project'));
+  document.getElementById('btnAddProjectEmpty')?.addEventListener('click', ()=> openModal('project'));
+  document.getElementById('btnAddTask').addEventListener('click', addTask);
+  els.inputTask.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTask(); });
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalConfirm').addEventListener('click', confirmModal);
+  els.modalOverlay.addEventListener('click', (e)=>{ if(e.target===els.modalOverlay) closeModal(); });
+  els.modalInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') confirmModal(); if(e.key==='Escape') closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && els.modalOverlay.classList.contains('is-open')) closeModal(); });
+  // confirm modal de borrado
+  document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+  document.getElementById('confirmAccept').addEventListener('click', ()=>{ const cb=confirmCb; closeConfirm(); if(cb) cb(); });
+  document.getElementById('confirmOverlay').addEventListener('click', (e)=>{ if(e.target===document.getElementById('confirmOverlay')) closeConfirm(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && document.getElementById('confirmOverlay').classList.contains('is-open')) closeConfirm(); });
+  // mobile nav
+  if(els.mobileNav){
+    els.mobileNav.querySelectorAll('[data-mnav]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const v=btn.dataset.mnav;
+        if(v==='cats'){ nav={categoryId:null, projectId:null}; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); }
+        if(v==='recent'){ 
+          nav={categoryId:null, projectId:null}; renderAll(); 
+          setTimeout(()=>{ document.getElementById('widgetRecent')?.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+        }
+      });
     });
-  });
+  }
 }
 
 // Deep link desde widget home: index.html#project=ID
@@ -497,7 +543,6 @@ function handleDeepLink(){
     history.replaceState(null,'',location.pathname);
   }
 }
-handleDeepLink();
 
 // Knob spiral canvas
 function drawKnob(){
@@ -519,7 +564,15 @@ function drawKnob(){
     ctx.arc(w/2,h/2,18, -Math.PI*0.75, Math.PI*0.15); ctx.stroke();
   });
 }
-drawKnob();
 
-// Init
-renderAll();
+// Init asíncrono: primero se restaura el tablero (localStorage → preferencias nativas),
+// y recién después se pinta. Así los proyectos agregados nunca se pierden ni se pisan.
+async function init(){
+  state = await loadState();
+  attachEvents();
+  drawKnob();
+  handleDeepLink();
+  renderAll();
+  // Si el arranque fue desde preferencias nativas, el tablero ya quedó en localStorage.
+}
+init();

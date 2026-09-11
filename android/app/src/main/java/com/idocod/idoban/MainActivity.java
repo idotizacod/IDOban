@@ -19,14 +19,15 @@ public class MainActivity extends BridgeActivity {
         handleWidgetIntent(intent);
     }
 
-    private void handleWidgetIntent(Intent intent) {
-        if (intent == null) return;
-        String projectId = intent.getStringExtra("projectId");
-        if (projectId != null && getBridge() != null && getBridge().getWebView() != null) {
-            String js = "if(window.openProjectDirect) window.openProjectDirect('" + projectId.replace("'", "\\'") + "'); else location.hash='project=" + projectId.replace("'", "\\'") + "';";
-            getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
-        }
-        // Fuerza actualización del widget al volver a la app
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Refresca el widget con datos reales al salir de la app (no esperar
+        // el ciclo de 30 min de updatePeriodMillis).
+        refreshWidget();
+    }
+
+    private void refreshWidget() {
         try {
             Intent update = new Intent(this, IdobanWidgetProvider.class);
             update.setAction(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE);
@@ -34,5 +35,14 @@ public class MainActivity extends BridgeActivity {
             update.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             sendBroadcast(update);
         } catch (Exception ignored) {}
+    }
+
+    private void handleWidgetIntent(Intent intent) {
+        if (intent == null) return;
+        String projectId = intent.getStringExtra("projectId");
+        if (projectId != null && getBridge() != null && getBridge().getWebView() != null) {
+            String js = "if(window.openProjectDirect) window.openProjectDirect('" + projectId.replace("'", "\\'") + "'); else location.hash='project=" + projectId.replace("'", "\\'") + "';";
+            getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
+        }
     }
 }

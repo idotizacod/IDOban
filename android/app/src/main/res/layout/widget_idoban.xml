@@ -14,7 +14,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <View
+        <TextView
             android:layout_width="4dp"
             android:layout_height="14dp"
             android:background="#d32f2f" />
@@ -101,19 +101,19 @@
             android:orientation="horizontal"
             android:background="#0a0a0a">
 
-            <View
+            <TextView
                 android:id="@+id/widget_seg_todo_0"
                 android:layout_width="0dp"
                 android:layout_weight="33"
                 android:layout_height="match_parent"
                 android:background="#90a1b9" />
-            <View
+            <TextView
                 android:id="@+id/widget_seg_doing_0"
                 android:layout_width="0dp"
                 android:layout_weight="33"
                 android:layout_height="match_parent"
                 android:background="#d32f2f" />
-            <View
+            <TextView
                 android:id="@+id/widget_seg_done_0"
                 android:layout_width="0dp"
                 android:layout_weight="34"
@@ -184,7 +184,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Sin proyectos recientes"
+        android:text="Abre IDOban para ver tus proyectos aquí"
         android:textColor="#1a1a1a"
         android:alpha="0.4"
         android:textSize="10sp"

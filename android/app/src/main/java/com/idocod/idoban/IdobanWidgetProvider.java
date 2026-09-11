@@ -35,11 +35,11 @@ public class IdobanWidgetProvider extends AppWidgetProvider {
             if (recentJson == null) recentJson = prefs.getString("idoban_recent_v1", null);
 
             if (boardJson == null || recentJson == null) {
-                // Demo: muestra TESIS 2026 con 33/33/34
-                views.setTextViewText(R.id.widget_badge, "01");
-                views.setViewVisibility(R.id.widget_item_0, android.view.View.VISIBLE);
-                views.setViewVisibility(R.id.widget_empty, android.view.View.GONE);
-                setupClick(context, views, R.id.widget_item_0, null);
+                // Sin datos aún: estado vacío real (nunca se fabrican datos demo).
+                views.setTextViewText(R.id.widget_badge, "00");
+                views.setViewVisibility(R.id.widget_item_0, android.view.View.GONE);
+                views.setViewVisibility(R.id.widget_empty, android.view.View.VISIBLE);
+                setupClick(context, views, R.id.widget_empty, null);
                 return;
             }
 
