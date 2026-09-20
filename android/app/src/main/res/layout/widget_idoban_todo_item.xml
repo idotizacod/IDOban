@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- IDOban · Fila de tarea del widget TODO (ListView item)
+     Ultra-Studio: canvas #f8f9fa · grid #e2e8f0 · tinta #1a1a1a · rojo #d32f2f
+     ≈ editor: pin | título+proyecto | ◄ | ✕ | ► -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@color/widget_item"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/todo_pin"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:gravity="center"
+        android:text="☆"
+        android:textSize="18sp"
+        android:fontFamily="monospace"
+        android:textColor="@color/todo_accent" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/todo_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="16.5sp"
+            android:fontFamily="monospace"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/widget_ink" />
+
+        <TextView
+            android:id="@+id/todo_proj"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text=""
+            android:textSize="10.5sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.08"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/widget_ink"
+            android:alpha="0.5" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/todo_back"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="4.5dp"
+        android:gravity="center"
+        android:text="◄"
+        android:textSize="16.5sp"
+        android:fontFamily="monospace"
+        android:textColor="#ffffff"
+        android:background="@color/widget_grid" />
+
+    <TextView
+        android:id="@+id/todo_edit"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="4.5dp"
+        android:gravity="center"
+        android:text="✕"
+        android:textSize="16.5sp"
+        android:fontFamily="monospace"
+        android:textColor="@color/todo_accent"
+        android:background="@color/widget_grid" />
+
+    <TextView
+        android:id="@+id/todo_next"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="4.5dp"
+        android:gravity="center"
+        android:text="►"
+        android:textSize="16.5sp"
+        android:fontFamily="monospace"
+        android:textColor="#ffffff"
+        android:background="@color/todo_accent" />
+</LinearLayout>

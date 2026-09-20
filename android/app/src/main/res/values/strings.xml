@@ -4,4 +4,7 @@
     <string name="title_activity_main">IDOban</string>
     <string name="package_name">com.idocod.idoban</string>
     <string name="custom_url_scheme">com.idocod.idoban</string>
+    <string name="widget_desc">IDOban · Proyecto activo</string>
+    <string name="widget_todo_desc">IDOToDo · Bucket list</string>
+    <string name="todo_input_title">Nueva tarea · IDOToDo</string>
 </resources>

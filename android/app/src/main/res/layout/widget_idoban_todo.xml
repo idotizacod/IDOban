@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- IDOban · To-do / Bucket widget (2º widget nativo)
+     Ultra-Studio: canvas #f8f9fa · grid #e2e8f0 · tinta #1a1a1a · rojo #d32f2f
+     ListView con RemoteViewsService: fijadas primero, scroll si se pasa del tamaño.
+     Empty state vía setEmptyView(todo_list -> todo_empty). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/todo_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@color/widget_canvas">
+
+    <!-- Cabecera -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="3dp"
+                android:layout_height="14dp"
+                android:background="@color/todo_accent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="IDOban // TODO"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.1"
+                android:textColor="@color/widget_ink" />
+
+            <TextView
+                android:id="@+id/todo_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@color/todo_accent"
+                android:text="00"
+                android:fontFamily="monospace"
+                android:textColor="#ffffff"
+                android:textSize="12sp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/todo_add"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="+"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:textColor="#ffffff"
+            android:background="@color/todo_accent" />
+    </LinearLayout>
+
+    <!-- Pestañas POR COMENZAR / EN PROCESO -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:background="@color/widget_grid">
+
+        <TextView
+            android:id="@+id/todo_tab_todo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="POR COMENZAR"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.06"
+            android:textColor="@color/widget_ink"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+
+        <TextView
+            android:id="@+id/todo_tab_doing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="EN PROCESO"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.06"
+            android:textColor="@color/widget_ink"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+    </LinearLayout>
+
+    <!-- Lista con scroll (RemoteViewsService) -->
+    <ListView
+        android:id="@+id/todo_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_canvas"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="vertical"
+        android:smoothScrollbar="true" />
+
+    <TextView
+        android:id="@+id/todo_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="SIN TAREAS — TOCA + PARA CREAR"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.06"
+        android:textColor="@color/widget_ink"
+        android:alpha="0.4"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/todo_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="► SIGUIENTE FASE · ★ FIJAR"
+        android:textSize="10.5sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.1"
+        android:textColor="@color/todo_accent" />
+</LinearLayout>

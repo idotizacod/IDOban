@@ -34,6 +34,7 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
 
+        <!-- Widget 1 · Proyectos -->
         <receiver
             android:name=".IdobanWidgetProvider"
             android:exported="true">
@@ -44,6 +45,40 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/idoban_widget_info" />
         </receiver>
+
+        <!-- Widget 2 · IDOToDo (Bucket list) -->
+        <receiver
+            android:name=".TodoListWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.idocod.idoban.TODO_TAB" />
+                <action android:name="com.idocod.idoban.TODO_ADD" />
+                <action android:name="com.idocod.idoban.TODO_ITEM" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/idoban_todo_widget_info" />
+        </receiver>
+
+        <!-- Servicio de lista con scroll del Widget 2 (RemoteViewsService) -->
+        <service
+            android:name=".TodoListService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- Entrada de tareas dentro de la app (Widget 2) -->
+        <activity
+            android:name=".TodoInputActivity"
+            android:exported="false"
+            android:label="@string/todo_input_title"
+            android:theme="@style/AppTheme.TodoInput" />
+
+        <!-- Confirmación de borrado dentro de la app (Widget 2) -->
+        <activity
+            android:name=".TodoConfirmActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.TodoInput" />
     </application>
 
     <!-- Permissions -->

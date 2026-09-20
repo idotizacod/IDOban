@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ultra-Studio canvas/grid/ink + acento rojo — paleta de widgets IDOban -->
+    <color name="widget_canvas">#f8f9fa</color>
+    <color name="widget_grid">#e2e8f0</color>
+    <color name="widget_ink">#1a1a1a</color>
+    <color name="widget_item">#ffffff</color>
+    <color name="todo_accent">#d32f2f</color>
+</resources>

@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.widget.RemoteViews;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,6 +23,15 @@ public class IdobanWidgetProvider extends AppWidgetProvider {
             updateWidget(context, views);
             appWidgetManager.updateAppWidget(widgetId, views);
         }
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
+                                          int appWidgetId, Bundle newOptions) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_idoban);
+        updateWidget(context, views);
+        appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
     private void updateWidget(Context context, RemoteViews views) {
@@ -114,5 +124,26 @@ public class IdobanWidgetProvider extends AppWidgetProvider {
             if (o!=null && id.equals(o.optString("id"))) return o;
         }
         return null;
+    }
+
+    /** Refresca todas las instancias de este widget (widget 1 · proyectos) con el board actual. */
+    public static void refreshAll(Context context) {
+        try {
+            AppWidgetManager am = AppWidgetManager.getInstance(context);
+            int[] ids = am.getAppWidgetIds(
+                    new android.content.ComponentName(context, IdobanWidgetProvider.class));
+            for (int id : ids) {
+                RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_idoban);
+                new IdobanWidgetProvider().updateWidgetChecked(context, views);
+                am.updateAppWidget(id, views);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    /** Versión que no lanza excepción al llamarse desde otro provider/actividad. */
+    private void updateWidgetChecked(Context context, RemoteViews views) {
+        try {
+            updateWidget(context, views);
+        } catch (Exception ignored) {}
     }
 }

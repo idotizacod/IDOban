@@ -19,4 +19,13 @@
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
     </style>
+
+    <!-- Pantalla de entrada de tareas: fondo canvas Ultra-Studio, sin splash -->
+    <style name="AppTheme.TodoInput" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/widget_canvas</item>
+        <item name="android:colorAccent">@color/todo_accent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/widget_canvas</item>
+        <item name="android:navigationBarColor">@color/widget_canvas</item>
+    </style>
 </resources>
